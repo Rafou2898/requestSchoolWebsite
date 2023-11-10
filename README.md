@@ -9,7 +9,8 @@ la priorité. L'option qui est utilisée pour faire tourner le programme est pou
 [2.2](TODO.md/#option-22-executer-le-programme-en-tant-que-processus) et [5](TODO.md/#option-5-librairie-python-schedule).
 
 **_Instruction :_** Pour utiliser le programme, il faut mettre ses identifiants gaps dans le fichier [user.py](user.py).
-
+Afin de télécharger toutes les librairies nécessaires, il faut exécuter la commande `pip install -r requirements.txt` 
+dans le terminal.
 _Remarque :_ Il y a des fonctions de la librairie fernet qui dervrait permettre de chiffrer les identifiants, 
 mais ça marche avec le mail, mais pas avec le mot de passe. Et pour le moment je ne sais pas pourquoi.
 
