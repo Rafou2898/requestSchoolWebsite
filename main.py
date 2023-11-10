@@ -8,6 +8,9 @@ from winotify import Notification
 import schedule
 import time
 from colorama import Fore
+import os
+
+result_html = "files/resultRequest.html"
 
 
 def process_table(file_or_link):
@@ -62,11 +65,8 @@ def process_table(file_or_link):
 
             df = pd.DataFrame(data, columns=["Matière", "Descriptif", "Date", "Moyenne", "Coef", "Note"])
 
-            # Export in csv
-            # df.to_csv("notes.csv", sep="\t", index=False)
-            # print('-' * 100)
-            # print(df)
-            # print('-' * 100)
+            df.to_csv("files/notes.csv", sep="\t", index=False)
+
             return df
         else:
             print("Table non trouvée dans la balise 'result'")
@@ -83,7 +83,7 @@ def export_to_html(result):
     :param result: The result of the request.
     :return: None.
     """
-    file = open("resultRequest.html", "w", encoding="utf-8")
+    file = open(result_html, "w", encoding="utf-8")
     file.write(result)
     file.close()
 
@@ -124,12 +124,11 @@ def request():
         r = s.post(user.urlControleContinu,
                    data=note_request_data, headers=user.headerPost)
 
-        print(r.status_code)
-        print(r.text)
-        #On check si la réponse contient le message d'erreur de session expirée
+        # On check si la réponse contient le message d'erreur de session expirée
         if not r.text.__contains__("Votre session a expiré"):
             reponse = filtre_response(r.text)
             export_to_html(reponse)
+
             return reponse
 
         # print("Reponse requete : " + r.text)
@@ -166,6 +165,7 @@ def compare_notes(old_data, new_data):
 
     return differences, changed_values
 
+
 def is_new_note():
     """
     Main function of the program. It compares the old notes with the new ones by processing the tables and call the
@@ -173,12 +173,12 @@ def is_new_note():
     :return: None.
     """
     try:
-        old_note = process_table("resultRequest.html")
+        old_note = process_table(result_html)
         look_for_new_note = process_table(request())
     except AttributeError:
         # color text
 
-        print( Fore.RED + "Une erreur est apparue dans la requête, vérifiez vos identifiants" + Fore.RESET)
+        print(Fore.RED + "Une erreur est apparue dans la requête, vérifiez vos identifiants" + Fore.RESET)
         return exit(0)
 
     differences, changed_values = compare_notes(old_note, look_for_new_note)
@@ -197,8 +197,6 @@ def is_new_note():
     else:
         print("Pas de nouvelles notes ou de différences détectées")
         new_note("Aucune nouvelle notes")
-    # Enregistrez les nouvelles données dans le fichier CSV
-    # new_data.to_csv("anciennes_notes.csv", sep="\t", index=False)
 
 
 def new_note(message):
@@ -215,7 +213,16 @@ def new_note(message):
     toast.show()
 
 
+def first_time():
+    """
+    Function that is called the first time using this programm. It processes the request and create the html and csv files.
+    """
+    process_table(request())
+
 if __name__ == "__main__":
+    if not os.path.exists(result_html):
+        first_time()
+
     is_new_note()
     schedule.every(1).minutes.do(is_new_note)
     try:
