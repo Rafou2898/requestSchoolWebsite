@@ -6,3 +6,4 @@ schedule
 Fernet
 cryptography
 winotify
+colorama

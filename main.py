@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from winotify import Notification
 import schedule
 import time
+from colorama import Fore
 
 
 def process_table(file_or_link):
@@ -123,12 +124,18 @@ def request():
         r = s.post(user.urlControleContinu,
                    data=note_request_data, headers=user.headerPost)
 
-        reponse = filtre_response(r.text)
-        export_to_html(reponse)
+        print(r.status_code)
+        print(r.text)
+        #On check si la réponse contient le message d'erreur de session expirée
+        if not r.text.__contains__("Votre session a expiré"):
+            reponse = filtre_response(r.text)
+            export_to_html(reponse)
+            return reponse
 
         # print("Reponse requete : " + r.text)
         # print("Reponse avec filtre : " + reponse)
-        return reponse
+        else:
+            return None
 
 
 def has_html_extension(file):
@@ -159,15 +166,21 @@ def compare_notes(old_data, new_data):
 
     return differences, changed_values
 
-
+#TODO gerer le cas ou on renvoit none car la session a expiré
 def is_new_note():
     """
     Main function of the program. It compares the old notes with the new ones by processing the tables and call the
     notification alert if there are new notes or differences.
     :return: None.
     """
-    old_note = process_table("resultRequest.html")
-    look_for_new_note = process_table(request())
+    try:
+        old_note = process_table("resultRequest.html")
+        look_for_new_note = process_table(request())
+    except AttributeError:
+        # color text
+
+        print( Fore.RED + "Une erreur est apparue dans la requête, vérifiez vos identifiants" + Fore.RESET)
+        return exit(0)
 
     differences, changed_values = compare_notes(old_note, look_for_new_note)
 
@@ -204,6 +217,7 @@ def new_note(message):
 
 
 if __name__ == "__main__":
+    is_new_note()
     schedule.every(1).minutes.do(is_new_note)
     try:
         while True:
