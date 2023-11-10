@@ -8,7 +8,12 @@ Le but final est de pouvoir le faire fonctionne sur un téléphone android. Pour
 la priorité. L'option qui est utilisée pour faire tourner le programme est pour l'instant un mix de l'option
 [2.2](#option-22-executer-le-programme-en-tant-que-processus) et [5](#option-5-librairie-python-schedule).
 
-_Note : Le programme n'est pas encore fini, il y a des choses qui pourraient être changé ou amélioré._
+**_Instruction :_** Pour pouvoir lancer le programme, il faut mettre ses identifiants gaps dans le fichier [user.py](user.py).
+
+_Remarque :_ Il y a des fonctions de la librairie fernet qui dervrait permettre de chiffrer les identifiants, 
+mais ça marche avec le mail mais pas avec le mot de passe. Et pour le moment je ne sais pas pourquoi.
+
+_Note :_ Le programme n'est pas encore fini, il y a des choses qui pourraient être changé ou amélioré.
 
 ## Code pour comparer les notes en csv et en BDR
 
@@ -167,7 +172,7 @@ import time
 
 # Fonction à exécuter
 def mon_script():
-    # Votre code Python ici
+# Votre code Python ici
 
 # Planifier l'exécution toutes les 30 minutes
 schedule.every(30).minutes.do(mon_script)
