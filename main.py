@@ -166,7 +166,6 @@ def compare_notes(old_data, new_data):
 
     return differences, changed_values
 
-#TODO gerer le cas ou on renvoit none car la session a expiré
 def is_new_note():
     """
     Main function of the program. It compares the old notes with the new ones by processing the tables and call the
