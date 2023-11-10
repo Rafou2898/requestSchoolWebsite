@@ -5,9 +5,11 @@
 - [ ] Voir comment faire des notifs sur linux pour adapter a linux
 - [ ] Si ça marche sur linux alors mettre des variables `__os__` pour determiner si windows ou linux
 - [ ] Faire une base de donnée pour stocker les notes
-- [ ] Voir comment interargir avec la base de donnée
-- [ ] Faire le programme mais en java
+- [ ] Voir comment interagir avec la base de donnée
+- [ ] Faire le programme, mais en java
 - [ ] Si le scripte java marche, l'adapter sur android
+- [ ] Ajouter fonctionnalité pour envoyer les notes par mail (pas nécessaire, mais pourquoi pas)
+- [ ] Ajouter fonctionnalité pour voir les notes des anciens semestres (surtout sur l'app android)]
 
 
 ## Code pour comparer les notes en csv et en BDR

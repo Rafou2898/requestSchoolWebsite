@@ -11,8 +11,11 @@ la priorité. L'option qui est utilisée pour faire tourner le programme est pou
 **_Instruction :_** Pour utiliser le programme, il faut mettre ses identifiants gaps dans le fichier [user.py](user.py).
 Afin de télécharger toutes les librairies nécessaires, il faut exécuter la commande `pip install -r requirements.txt` 
 dans le terminal.
-_Remarque :_ Il y a des fonctions de la librairie fernet qui dervrait permettre de chiffrer les identifiants, 
-mais ça marche avec le mail, mais pas avec le mot de passe. Et pour le moment je ne sais pas pourquoi.
+Pour le moment, le programme envoie aussi une notification quand il n'y a pas de nouvelle note et chaques minutes. Pour enlever 
+cette notification, il faut supprimer la ligne ` new_note("Aucune nouvelle notes")` dans la fonction `is_new_note()`.
+
+_Remarque :_ Il y a des fonctions de la librairie fernet qui devrait permettre de chiffrer les identifiants, 
+mais ça marche avec le mail, mais pas avec le mot de passe. Et pour le moment, je ne sais pas pourquoi.
 
 _Note :_ Le programme n'est pas encore fini, il y a des choses qui pourraient être changé ou amélioré.
 

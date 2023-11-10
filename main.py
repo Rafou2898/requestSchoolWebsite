@@ -11,6 +11,7 @@ from colorama import Fore
 import os
 
 result_html = "files/resultRequest.html"
+result_csv = "files/notes.csv"
 
 
 def process_table(file_or_link):
@@ -65,7 +66,7 @@ def process_table(file_or_link):
 
             df = pd.DataFrame(data, columns=["Matière", "Descriptif", "Date", "Moyenne", "Coef", "Note"])
 
-            df.to_csv("files/notes.csv", sep="\t", index=False)
+            df.to_csv(result_csv, sep="\t", index=False)
 
             return df
         else:
@@ -176,8 +177,6 @@ def is_new_note():
         old_note = process_table(result_html)
         look_for_new_note = process_table(request())
     except AttributeError:
-        # color text
-
         print(Fore.RED + "Une erreur est apparue dans la requête, vérifiez vos identifiants" + Fore.RESET)
         return exit(0)
 
@@ -219,17 +218,19 @@ def first_time():
     """
     process_table(request())
 
+
 if __name__ == "__main__":
     if not os.path.exists(result_html):
         first_time()
 
+    # Do the request at the start of the program
     is_new_note()
+    # Do the request every minute
     schedule.every(1).minutes.do(is_new_note)
     try:
         while True:
             schedule.run_pending()
             time.sleep(1)
-            print("Waiting...")
 
     except KeyboardInterrupt:
         exit(0)
