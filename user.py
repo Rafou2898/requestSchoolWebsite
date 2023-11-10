@@ -15,8 +15,8 @@ headerPost = {
 url = "https://gaps.heig-vd.ch/consultation/horaires/?annee=2023&trimestre=1&type=2&id=18672"
 urlControleContinu = "https://gaps.heig-vd.ch/consultation/controlescontinus/consultation.php?idst=18672"
 
-MAIL = "<add_Mail>"
-PASS = "<add_Mail>"
+MAIL = "add_Mail"
+PASS = "add_Password"
 
 
 def generate_key():
