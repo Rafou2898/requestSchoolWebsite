@@ -1,5 +1,6 @@
-from cryptography.fernet import Fernet
-
+import keyring as kr
+import getpass
+#FIXME: La plus part des entêtes sont inutiles, il faudrait les supprimer
 header = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'
                   'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -15,50 +16,26 @@ headerPost = {
 url = "https://gaps.heig-vd.ch/consultation/horaires/?annee=2023&trimestre=1&type=2&id=18672"
 urlControleContinu = "https://gaps.heig-vd.ch/consultation/controlescontinus/consultation.php?idst=18672"
 
-MAIL = "your_mail"
-PASS = "your_password"
+APP_NAME = "autogaps"
+
+def save_credentials():
+    # TODO check that no credentials exist, otherwise override
+    print("Your AAI credentials will be stored in the system keyring.")
+    username = input("Input your username (first.last): ")
+    print("Hello : " + username)
+    password = getpass.getpass("Enter your password: ")
+    kr.set_password(APP_NAME, username, password)  # TODO add try/except
 
 
-def generate_key():
-    # Générez une clé de chiffrement
-    key = Fernet.generate_key()
-    cipher_suite = Fernet(key)
-
-    # Chiffrez les informations d'identification
-    username = MAIL.encode()
-    password = PASS.encode()
-
-    encrypted_username = cipher_suite.encrypt(username)
-    encrypted_password = cipher_suite.encrypt(password)
-
-    # Enregistrez les informations d'identification chiffrées dans un fichier
-    with open('credentials.txt', 'wb') as file:
-        file.write(encrypted_username)
-        file.write(b'\n')  # Ajoute une ligne vide pour séparer les données
-        file.write(encrypted_password)
-
-    # Sauvegardez également la clé de chiffrement dans un endroit sûr
-    with open('encryption_key.key', 'wb') as key_file:
-        key_file.write(key)
+# Could use some error handling
+def get_credentials():
+    cred = kr.get_credential(APP_NAME, None)
+    if cred is None:
+        save_credentials()
+        cred = kr.get_credential(APP_NAME, "")
+    assert cred is not None
+    return cred
 
 
-# Probleme avec la decription du password
-def get_info():
-    # Chargez la clé de chiffrement à partir d'un endroit sûr
-    with open('encryption_key.key', 'rb') as key_file:
-        key = key_file.read()
-
-    # Créez une instance de Fernet avec la clé
-    cipher_suite = Fernet(key)
-
-    # Lisez les informations d'identification chiffrées à partir du fichier
-    with open('credentials.txt', 'rb') as file:
-        encrypted_username = file.readline()
-        file.readline()  # Ignore la ligne vide
-        encrypted_password = file.readline()
-
-    # Déchiffrez les informations d'identification
-    username = cipher_suite.decrypt(encrypted_username).decode()
-    print("username : ", username)
-    password = cipher_suite.decrypt(encrypted_password).decode()
-    return username, password
+MAIL = get_credentials().username
+PASS = get_credentials().password

@@ -1,15 +1,26 @@
 ## TODO et options
 
 ### TODO
+- [ ] Faire en sorte de pouvoir voir toute les notes dans le terminal et choisir le semestre que l on souhaite voir
+- [ ] Faire aussi requete pour l'horaire
 - [ ] Voir lancer le scripte au démarrage de windows
+- Faire le README en anglais
 - [ ] Voir comment faire des notifs sur linux pour adapter a linux
+-> https://pychao.com/2021/03/01/sending-desktop-notification-in-linux-with-python-with-d-bus-directly/
+-> https://pypi.org/project/notify-py/  //marche pour windows et linux?
 - [ ] Si ça marche sur linux alors mettre des variables `__os__` pour determiner si windows ou linux
-- [ ] Faire une base de donnée pour stocker les notes
-- [ ] Voir comment interagir avec la base de donnée
-- [ ] Faire le programme, mais en java
-- [ ] Si le scripte java marche, l'adapter sur android
+-> https://note.nkmk.me/en/python-platform-system-release-version/#:~:text=The%20OS%20name%20can%20also,%2C%20'win32'%20%2C%20etc.
+- [x] ~~Faire une base de donnée pour stocker les notes~~
+- [x] ~~Voir comment interagir avec la base de donnée~~
+- [x] ~~Faire le programme, mais en java~~
+- [ ] Si le scripte java marche, l'adapter sur android et utiliser `sqlite` pour la base de donnée
 - [ ] Ajouter fonctionnalité pour envoyer les notes par mail (pas nécessaire, mais pourquoi pas)
 - [ ] Ajouter fonctionnalité pour voir les notes des anciens semestres (surtout sur l'app android)]
+- [ ] Probleme de encodage des caractères spéciaux unicode... Résolut avec décode mais y a toujours un problème de \n
+```plaintext
+Différences détectées :
+POO  Labo 3 - F\u00e9d\u00e9ration [...]\n       \n       Labo 3 - F\u00e9d\u00e9ration Internationale de Gymnastique\n       \n               4.8
+```
 
 
 ## Code pour comparer les notes en csv et en BDR

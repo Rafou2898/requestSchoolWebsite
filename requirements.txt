@@ -3,7 +3,8 @@ pandas
 beautifulsoup4
 Notification
 schedule
-Fernet
-cryptography
 winotify
 colorama
+keyring
+getpass
+psycopg2

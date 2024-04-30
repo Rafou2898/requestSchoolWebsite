@@ -9,15 +9,26 @@ import schedule
 import time
 from colorama import Fore
 import os
+from html import unescape
+from datetime import datetime
+
+import psycopg2
+
+hostname = 'localhost'
+port = '5433'
+username = 'Rafou'
+password = 'gaps'
+database = 'projetsDB'
 
 result_html = "files/resultRequest.html"
 result_csv = "files/notes.csv"
 
 
-def process_table(file_or_link):
+def process_table(file_or_link, dbOrCsv):
     """
     Function to process the table in the html file.
     :param file_or_link: Either a file html or the response of a request (so a string).
+    :param dbOrCsv: True if we want to export the result in a csv file, False if we want to export it to the database.
     :return: The table in a DataFrame.
     """
 
@@ -47,7 +58,21 @@ def process_table(file_or_link):
                     matiere = header_cell.text.split(" - ")[0]
                 cell = row.find("div", {"class": "formulaire_contenu_label"})
                 if cell:
-                    descriptifs.append(cell.text)
+                    # TODO: J'essaie de faire en sorte que les caractères spéciaux soient affichés correctement mais ca marche pas...
+                    specialCase = row.find("div", {"onclick": "toggleLMNodes(this.childNodes);"})
+
+                    if specialCase:
+                        # print("in special case")
+                        # print(specialCase.text)
+                        elements = row.find_all(id=True)
+                        for element in elements:
+                            id_attribute_value = element.get('id')
+                            if 'long' in id_attribute_value:
+                                descriptifs.append(element.text)
+                    else:
+
+                        descriptifs.append(cell.text)
+
                     matieres.append(matiere)
                 if row.find_all("td", {"class": "bodyCC"}):
                     bodyCC_values = [td.text for td in row.find_all("td", {"class": "bodyCC"})]
@@ -58,19 +83,38 @@ def process_table(file_or_link):
                 data.append(
                     [matieres[i], descriptifs[i], bodyCC[i][0], bodyCC[i][1], bodyCC[i][2], bodyCC[i][3]])
 
-                pattern = r"\n"
+                pattern = r"\\n"
+                # FIXME: VOIR si des que ca marche je peux supprimer cette loop
+                patternEsc = r"\\u00e9"
             for obj in data:
                 for i in range(len(obj)):
-                    obj[i] = re.sub(pattern, "", obj[i])
+                      obj[i] = re.sub(pattern, "", obj[i])
+                      obj[i] = re.sub(patternEsc, "é", obj[i])
                 # print(obj)
+            if dbOrCsv:
+                df = pd.DataFrame(data, columns=["Matière", "Descriptif", "Date", "Moyenne", "Coef", "Note"])
 
-            df = pd.DataFrame(data, columns=["Matière", "Descriptif", "Date", "Moyenne", "Coef", "Note"])
+                df.to_csv(result_csv, sep="\t", index=False, encoding='utf-8')
 
-            df.to_csv(result_csv, sep="\t", index=False)
+                return df
+            else:
 
-            return df
+                for obj in data:
+                    for i in range(len(obj)):
+                        if obj[i] == "-":
+                            obj[i] = None
+                        elif isinstance(obj[i], str):
+                            try:
+                                parsed_date = datetime.strptime(obj[i], '%d.%m.%Y')
+                                obj[i] = parsed_date.strftime('%Y-%m-%d')
+                            except ValueError:
+
+                                continue
+                print(data)
+                return data
         else:
             print("Table non trouvée dans la balise 'result'")
+
             return None
 
     else:
@@ -88,7 +132,7 @@ def export_to_html(result):
     file.write(result)
     file.close()
 
-
+#FIXME: Je peux supprimer ce filtrage je pense et voir si y a la même dnas l'app java
 def filtre_response(text):
     """
     Function to filter the response of the request, words specific to the response of the Gaps request.
@@ -109,7 +153,6 @@ def filtre_response(text):
 def request():
     """
     Request to the Gaps website. In order to use it correctly is necessary write the credentials in the user.py file.
-    TODO : Replace the credential by the generate_key() and get_info() function. But it doesn't work for the moment.
     :return: The response of the request.
     """
 
@@ -125,15 +168,29 @@ def request():
         r = s.post(user.urlControleContinu,
                    data=note_request_data, headers=user.headerPost)
 
+        reponse = filtre_response(r.text)
+
+
+        print("reponse requete : " + r.text)
+        print("typeOf  r.text : " , type(r.text))
+        #FIXME: Aucune de ces methodes ne marche pour enlever les \n, je ne sais pas quel est le problème
+        #Donc pour le moment je garde le filtre
+
+        # reponse = r.content.decode("unicode-escape").replace("\\", "")
+        # print("typeOf  reponse decode : " , type(r.text))
+        # print("reponse decode : " + reponse)
+        # new_reponse = reponse.strip()
+        #reponse = r.text.replace("\n", "")
+        #reponse = reponse.replace(r"\\n", "")
+        #pattern = r"\\n"
+        #reponse = re.sub(pattern, "", r.text)
+
+
         # On check si la réponse contient le message d'erreur de session expirée
         if not r.text.__contains__("Votre session a expiré"):
-            reponse = filtre_response(r.text)
             export_to_html(reponse)
 
             return reponse
-
-        # print("Reponse requete : " + r.text)
-        # print("Reponse avec filtre : " + reponse)
         else:
             return None
 
@@ -158,7 +215,6 @@ def compare_notes(old_data, new_data):
     :return: A tuple with the differences and the changed values if they are any.
     """
     # Comparer les différences entre les deux DataFrames
-    # TODO: Alors ca marche mais faut comprendre comment c'est fait
     differences = new_data.merge(old_data, indicator=True, how='outer').loc[lambda x: x['_merge'] == 'right_only']
 
     # Comparer les valeurs différentes entre les deux DataFrames
@@ -174,8 +230,8 @@ def is_new_note():
     :return: None.
     """
     try:
-        old_note = process_table(result_html)
-        look_for_new_note = process_table(request())
+        old_note = process_table(result_html, True )
+        look_for_new_note = process_table(request(), True)
     except AttributeError:
         print(Fore.RED + "Une erreur est apparue dans la requête, vérifiez vos identifiants" + Fore.RESET)
         return exit(0)
@@ -191,14 +247,14 @@ def is_new_note():
             to_print = changed_values.drop(columns=["Coef", "Date", "Moyenne"]).to_string(index=False, header=False)
             print("Différences détectées :")
             print(to_print)
-            new_note(to_print)
+            notification(to_print)
 
     else:
         print("Pas de nouvelles notes ou de différences détectées")
-        new_note("Aucune nouvelle notes")
+        # new_note("Aucune nouvelle notes")
 
 
-def new_note(message):
+def notification(message):
     """
     Function to call the notification alert. Works only on windows.
     :param message: The message to display.
@@ -216,7 +272,45 @@ def first_time():
     """
     Function that is called the first time using this programm. It processes the request and create the html and csv files.
     """
-    process_table(request())
+    process_table(request(), True)
+
+
+def insert_into_db():
+    # process_table(request())
+    conn = None
+    try:
+        conn = psycopg2.connect(
+            host=hostname,
+            port=port,
+            user=username,
+            password=password,
+            dbname=database,
+
+        )
+
+        # Créez un nouveau curseur
+        cur = conn.cursor()
+
+        # Exécutez une requête
+        cur.execute('set search_path = notes;')
+        cur.execute('SELECT * FROM noteongaps;')
+        # cur.executemany('INSERT INTO noteongaps VALUES (%s, %s, %s, %s, %s, %s);', process_table(request(), False))
+        # cur.execute("commit;")
+        # cur.execute('SELECT * FROM noteongaps;')
+
+        # Récupérez les résultats
+        rows = cur.fetchall()
+        for row in rows:
+            print(row)
+
+        # Fermez le curseur et la connexion
+        cur.close()
+
+    except Exception as e:
+        print(f"Une erreur est survenue: {e}")
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 if __name__ == "__main__":
@@ -224,6 +318,7 @@ if __name__ == "__main__":
         first_time()
 
     # Do the request at the start of the program
+    notification("Démarrage du programme")
     is_new_note()
     # Do the request every minute
     schedule.every(1).minutes.do(is_new_note)
