@@ -14,11 +14,13 @@ from datetime import datetime
 
 import psycopg2
 
-hostname = 'localhost'
-port = '5433'
-username = 'Rafou'
-password = 'gaps'
-database = 'projetsDB'
+
+# Used for a database connection but useless for now
+hostname = ''
+port = ''
+username = ''
+password = ''
+database = ''
 
 result_html = "files/resultRequest.html"
 result_csv = "files/notes.csv"
